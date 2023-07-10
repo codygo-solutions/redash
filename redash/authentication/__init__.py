@@ -6,7 +6,7 @@ from datetime import timedelta
 from urllib.parse import urlsplit, urlunsplit
 
 import cognitojwt
-from flask import jsonify, redirect, request, session, url_for
+from flask import jsonify, redirect, request, session, url_for, abort
 from flask_login import LoginManager, login_user, logout_user, user_logged_in
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.exceptions import Unauthorized
@@ -158,23 +158,47 @@ def get_api_key_from_request(request):
 
 
 def api_key_load_user_from_request(request):
-    api_key = get_api_key_from_request(request)
+    raw_api_key = get_api_key_from_request(request)
+    if not raw_api_key:
+        abort(401, description="provide a valid api key")
+
+    api_key = validate_cognito(raw_api_key)
+    if not api_key:
+        abort(401, description="provide a valid api key")
+
     if request.view_args is not None:
         query_id = request.view_args.get("query_id", None)
-        split_keys = (api_key or '').split("__", 1)
-        cognito_token = None
-        if len(split_keys) == 2:
-            [cognito_token, api_key] = split_keys
-        claims = parse_cognito_token(cognito_token)
-        if not claims:
-            # throw special error? or just claim req as anonymous
-            raise Exception("invalid cognito token")
         user = get_user_from_api_key(api_key, query_id)
     else:
         user = None
-
     return user
 
+def validate_cognito(api_key):
+    splits = api_key.split("__", 1)
+    if len(splits) != 2:
+        return None
+    [cognito_token, api_key] = splits
+    claims = parse_cognito_token(cognito_token)
+    if not claims:
+        return None
+    tenant = claims.get("custom:tenant", None)
+    if not tenant:
+        return None
+
+    has_access = check_if_tenant_has_access(tenant, api_key)
+    return api_key if has_access else None
+
+def check_if_tenant_has_access(tenant, api_key):
+    all_tenants = {
+        "codygo": [
+            "tzfTGQK8edwcpDn1DSUlgHNLCFJYn58pEQnavq0U"
+        ]
+    }
+
+    tenant_keys = all_tenants.get(tenant, [])
+    has_access = api_key in tenant_keys
+
+    return has_access
 
 def jwt_token_load_user_from_request(request):
     org = current_org._get_current_object()
@@ -326,8 +350,9 @@ def get_next_path(unsafe_next_path):
 
 
 def parse_cognito_token(id_token):
-    REGION = 'eu-central-1'
-    USERPOOL_ID = 'eu-central-1_TMCqf53b6'
+    # move to env vars
+    REGION = 'us-east-1'
+    USERPOOL_ID = 'us-east-1_qarON3IvP'
 
     try:
         verified_claims: dict = cognitojwt.decode(
