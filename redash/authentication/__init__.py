@@ -5,15 +5,17 @@ import time
 from datetime import timedelta
 from urllib.parse import urlsplit, urlunsplit
 
-from flask import jsonify, redirect, request, url_for, session
+import cognitojwt
+from flask import jsonify, redirect, request, session, url_for
 from flask_login import LoginManager, login_user, logout_user, user_logged_in
+from sqlalchemy.orm.exc import NoResultFound
+from werkzeug.exceptions import Unauthorized
+
 from redash import models, settings
 from redash.authentication import jwt_auth
 from redash.authentication.org_resolving import current_org
 from redash.settings.organization import settings as org_settings
 from redash.tasks import record_event
-from sqlalchemy.orm.exc import NoResultFound
-from werkzeug.exceptions import Unauthorized
 
 login_manager = LoginManager()
 logger = logging.getLogger("authentication")
@@ -159,6 +161,14 @@ def api_key_load_user_from_request(request):
     api_key = get_api_key_from_request(request)
     if request.view_args is not None:
         query_id = request.view_args.get("query_id", None)
+        split_keys = (api_key or '').split("__", 1)
+        cognito_token = None
+        if len(split_keys) == 2:
+            [cognito_token, api_key] = split_keys
+        claims = parse_cognito_token(cognito_token)
+        if not claims:
+            # throw special error? or just claim req as anonymous
+            raise Exception("invalid cognito token")
         user = get_user_from_api_key(api_key, query_id)
     else:
         user = None
@@ -242,13 +252,9 @@ def logout_and_redirect_to_index():
 
 
 def init_app(app):
-    from redash.authentication import (
-        saml_auth,
-        remote_user_auth,
-        ldap_auth,
-    )
-
-    from redash.authentication.google_oauth import create_google_oauth_blueprint
+    from redash.authentication import ldap_auth, remote_user_auth, saml_auth
+    from redash.authentication.google_oauth import \
+        create_google_oauth_blueprint
 
     login_manager.init_app(app)
     login_manager.anonymous_user = models.AnonymousUser
@@ -317,3 +323,21 @@ def get_next_path(unsafe_next_path):
         safe_next_path = "./"
 
     return safe_next_path
+
+
+def parse_cognito_token(id_token):
+    REGION = 'eu-central-1'
+    USERPOOL_ID = 'eu-central-1_TMCqf53b6'
+
+    try:
+        verified_claims: dict = cognitojwt.decode(
+            id_token,
+            REGION,
+            USERPOOL_ID,
+            # allow testmode to avoid checking for expired tokens, remove in prod
+            testmode=True
+        )
+
+        return verified_claims
+    except:
+        return None
