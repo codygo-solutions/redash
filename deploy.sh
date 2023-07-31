@@ -1,6 +1,6 @@
 #!/bin/sh
 
-remote_address="ec2-3-66-216-60.eu-central-1.compute.amazonaws.com"
+remote_address="ec2-54-93-179-229.eu-central-1.compute.amazonaws.com"
 image_name="kevinand11/redash"
 version=$(docker images | awk '($1 == "kevinand11/redash") {print $2 += .01; exit}')
 
