@@ -253,9 +253,17 @@ const config = {
           "/logout",
           "/invite",
           "/setup",
+          "/invite", //multi
+          "/reset", //multi
+          "/verify", //multi
+          "/verification_email", //multi
           "/status.json",
-          "/api",
-          "/oauth"
+          "/api", //multi
+          "/oauth",
+          "/ping",
+          "/public", //multi//special
+          "/embed", //multi//special
+          "/dashboard", //multi//special
         ],
         target: redashBackend + "/",
         changeOrigin: true,

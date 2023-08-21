@@ -1,5 +1,3 @@
-.venv
-venv/
 .cache
 .coverage.*
 .coveralls.yml
@@ -9,6 +7,7 @@ venv/
 coverage
 .coverage
 coverage.xml
+client/dist
 .DS_Store
 .#*
 \#*#
@@ -17,7 +16,10 @@ _build
 .vscode
 .env
 
-dump.rdb
-
+node_modules
 .tmp
 .sass-cache
+npm-debug.log
+
+client/cypress/screenshots
+client/cypress/videos

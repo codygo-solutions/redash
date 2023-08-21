@@ -31,20 +31,7 @@ lint:
 backend-unit-tests: up test_db
 	docker-compose run --rm --name tests server tests
 
-frontend-unit-tests:
-	CYPRESS_INSTALL_BINARY=0 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 yarn --frozen-lockfile
-	yarn test
-
-test: lint backend-unit-tests frontend-unit-tests
-
-build: 
-	yarn build
-
-watch: 
-	yarn watch
-
-start: 
-	yarn start
+test: lint backend-unit-tests
 
 redis-cli:
 	docker-compose run --rm redis redis-cli -h redis

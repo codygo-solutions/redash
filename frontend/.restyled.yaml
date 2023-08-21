@@ -49,9 +49,9 @@ labels: ["Skip CI"]
 
 # Restylers to run, and how
 restylers:
-  - name: black
-    image: restyled/restyler-black:v19.10b0
+  - name: prettier
+    image: restyled/restyler-prettier:v1.19.1-2
     include:
-      - redash
-      - tests
-      - migrations/versions
+      - client/app/**/*.js
+      - client/app/**/*.jsx
+      - client/cypress/**/*.js
