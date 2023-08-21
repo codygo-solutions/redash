@@ -261,9 +261,9 @@ const config = {
           "/api", //multi
           "/oauth",
           "/ping",
-          "/public", //multi//special
-          "/embed", //multi//special
-          "/dashboard", //multi//special
+          //"/public", //multi//special
+          //"/embed", //multi//special
+          //"/dashboard", //multi//special
         ],
         target: redashBackend + "/",
         changeOrigin: true,

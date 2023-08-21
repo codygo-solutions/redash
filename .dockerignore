@@ -2,6 +2,7 @@ node_modules/
 .tmp/
 .venv/
 venv/
+frontend/
 .git/
 /.codeclimate.yml
 /.coverage

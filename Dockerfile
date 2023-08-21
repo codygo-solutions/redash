@@ -73,7 +73,6 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY --chown=redash . /app
-RUN mkdir -p /app/client/dist && touch /app/client/dist/multi_org.html && touch /app/client/dist/index.html
 RUN chown redash /app
 USER redash
 
