@@ -32,7 +32,6 @@ def create_app():
         security,
         tasks,
     )
-    from .handlers.webpack import configure_webpack
     from .metrics import request as request_metrics
     from .models import db, users
     from .utils import sentry
@@ -52,7 +51,6 @@ def create_app():
     authentication.init_app(app)
     limiter.init_app(app)
     handlers.init_app(app)
-    configure_webpack(app)
     users.init_app(app)
     tasks.init_app(app)
 
