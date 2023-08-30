@@ -307,9 +307,7 @@ class PublicDashboardsResource(BaseResource):
             abort(400, message="Public URLs are disabled.")
 
         api_keys = models.ApiKey.get_all_by_type(models.Dashboard.__tablename__)
-        dashboards = list(map(lambda api_key: DashboardSerializer(
-            api_key.object, with_widgets=False, user=self.current_user
-        ).serialize(), api_keys))
+        dashboards = list(map(lambda api_key: public_dashboard(api_key.object), api_keys))
 
         return dashboards
 
