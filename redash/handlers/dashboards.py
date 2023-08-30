@@ -296,6 +296,20 @@ class DashboardResource(BaseResource):
 
         return d
 
+class PublicDashboardsResource(BaseResource):
+    decorators = [csp_allows_embeding]
+
+    def get(self):
+        """
+        Retrieve a list of public dashboards.
+        """
+        if self.current_org.get_setting("disable_public_urls"):
+            abort(400, message="Public URLs are disabled.")
+
+        api_keys = models.ApiKey.get_all_by_type(models.Dashboard.__tablename__)
+        dashboards = list(map(lambda api_key: api_key.object, api_keys))
+
+        return dashboards
 
 class PublicDashboardResource(BaseResource):
     decorators = BaseResource.decorators + [csp_allows_embeding]
