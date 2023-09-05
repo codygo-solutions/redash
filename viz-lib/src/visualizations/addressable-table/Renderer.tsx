@@ -113,7 +113,7 @@ export default function Renderer({ options, data }: any) {
     setOrderBy([]);
   }, [options.columns, data.columns]);
 
-  if (data.rows.length === 0) {
+  if (mainRows.length === 0 && !searchTerm) {
     return <NotEnoughData />;
   }
 
@@ -134,7 +134,14 @@ export default function Renderer({ options, data }: any) {
         // @ts-expect-error ts-migrate(2322) FIXME: Type '{ key: any; dataIndex: string; align: any; s... Remove this comment to see the full error message
         columns={tableColumns}
         dataSource={mainRows}
-        pagination={false}
+        pagination={{
+          size: get(options, "paginationSize", ""),
+          // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'TablePagi... Remove this comment to see the full error message
+          position: "bottom",
+          pageSize: options.itemsPerPage,
+          hideOnSinglePage: true,
+          showSizeChanger: false,
+        }}
         showSorterTooltip={false}
         summary={() => {
           return (
