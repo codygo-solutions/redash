@@ -14,8 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Chart } from "react-chartjs-2";
 
 import { ExternalTooltipHandler } from "./ExternalTooltipHandler";
-
-const PER_PAGE = 10;
+import getChartData from './getChartData';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, BarController);
 export type HorizontalBarChartVariant = "redGradient" | "purpleGradient";
@@ -52,47 +51,11 @@ function createGradient(ctx: any, area: ChartArea, variant?: HorizontalBarChartV
   return gradient;
 }
 
-// const Container = tw.div`
-//   flex items-center justify-center h-full
-//   `;
-
-export default function Renderer({ data, options }: any) {
-  const page = 0;
-  //   if (error || loading) {
-  //     return (
-  //       <Container>
-  //         <div className="flex-y w-full gap-1.5">
-  //           {[25, 90, 33, 33, 13, 18, 65, 60, 25, 63].map((d, i) => (
-  //             <div key={i} className="flex w-full justify-start gap-16">
-  //               <div className="flex gap-3 items-center shrink-0">
-  //                 {skeletonPictures ? (
-  //                   <Skeleton circle containerClassName="h-[30px] w-[30px] flex items-center" width={30} height={30} />
-  //                 ) : (
-  //                   ""
-  //                 )}
-  //                 <Skeleton containerClassName="h-[30px] flex items-center" width={75} height={4} />
-  //               </div>
-  //               <Skeleton containerClassName="w-full flex items-center" width={`${d}%`} height={24} />
-  //             </div>
-  //           ))}
-  //           <div className="flex mt-4">
-  //             <div className={`${skeletonPictures ? "w-48" : "w-36"} shrink-0`}></div>
-  //             <div className="flex w-full justify-between">
-  //               {[...Array(5)].map((_, i) => (
-  //                 <Skeleton key={i} containerClassName="flex items-center" width={40} height={4} />
-  //               ))}
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </Container>
-  //     );
-  //   }
-
-  const dataPage = data.rows.slice(PER_PAGE * page, PER_PAGE * (page + 1));
-
+export default function Renderer ({ data, options }: any) {
+  const preppedData = getChartData(data.rows, options)
   return (
     <SafeHorizontalBarChart
-      data={dataPage}
+      data={preppedData[0]}
       variant={options.colorScheme}
       maxX={Math.max(...data.rows.map((d: any) => d.size))}
     />
@@ -107,34 +70,20 @@ function SafeHorizontalBarChart({ data, maxX, variant = "redGradient" }: any) {
   const [activeElement, setActiveElement] = useState<number | null>(null);
   const [chartMouseOver, setChartMouseOver] = useState(false);
 
-  const labels = data.map((d: any) => d.title);
-  const values = data.map((d: any) => d.price);
-
   useEffect(() => {
     const chart = chartRef.current;
-    if (!chart || !labels) {
+    if (!chart) {
       return;
     }
 
-    const emptyLabelsCount = PER_PAGE - labels.length;
-    const emptyLabels = emptyLabelsCount >= 0 ? [...Array(emptyLabelsCount)] : [];
-    const safeLabels = labels.map((d: any) => d || "<empty>");
-    const labelsWithEmpty = [...safeLabels, ...emptyLabels];
-
     const chartData = {
-      labels: labelsWithEmpty,
-      datasets: [
-        {
-          data: values,
+      labels: Object.keys(Object.values(data ?? {}).at(0) ?? {}),
+      datasets: Object.entries(data)
+        .map(([key, val]: any) => ({
+          type: 'bar',
+          label: key,
+          data: Object.values(val),
           barThickness: 24,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          // backgroundColor: (element: any) => {
-          //   if (chartMouseOver && element.dataIndex !== activeElement) {
-          //     return createGradient(chart.ctx, chart.chartArea, variant, true);
-          //   }
-          //   return createGradient(chart.ctx, chart.chartArea, variant);
-          // },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           backgroundColor: () => {
             // @ts-ignore
             return createGradient(chart.ctx, chart.chartArea, variant);
@@ -152,11 +101,10 @@ function SafeHorizontalBarChart({ data, maxX, variant = "redGradient" }: any) {
               return "#7B1FA2";
             }
             return "#000000";
-          },
-        },
-      ],
-    };
-    setChartData(chartData);
+          }
+        })),
+    }
+    setChartData(chartData as any);
     chart.update();
   }, [data, activeElement, chartMouseOver]);
 
