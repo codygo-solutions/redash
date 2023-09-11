@@ -20,6 +20,7 @@ import addressableTableVisualization from "./addressable-table";
 import addressableCounterVisualization from "./addressable-counter";
 import addressablePieVisualization from "./addressable-pie";
 
+import barChartVisualization from "./custom/bar-chart";
 import verticalBarChartVisualization from "./custom/vertical-bar-chart";
 import horizontalBarChartVisualization from "./custom/horizontal-bar-chart";
 import pieChartVisualization from "./custom/pie-chart";
@@ -103,6 +104,7 @@ each(
     sunburstVisualization,
     tableVisualization,
     wordCloudVisualization,
+    barChartVisualization,
     verticalBarChartVisualization,
     horizontalBarChartVisualization,
     pieChartVisualization,
