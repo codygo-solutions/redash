@@ -60,7 +60,7 @@ export default function getData(data: any, options: any) {
     if (isNil(seriesName)) {
       each(yValues, (yValue, ySeriesName) => {
         // @ts-expect-error ts-migrate(2322) FIXME: Type '{ x: number; y: never; $raw: any; }' is not ... Remove this comment to see the full error message
-        point = { x: xValue, y: yValue, thumbnail: thumbnailLink, $raw: point.$raw };
+        point = { x: (xValue * Math.random() * 1000000000) + Date.now(), y: yValue, thumbnail: thumbnailLink, $raw: point.$raw };
 
         addPointToSeries(point, series, ySeriesName);
       });

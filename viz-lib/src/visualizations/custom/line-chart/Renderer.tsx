@@ -3,9 +3,10 @@ import React, { useEffect, useRef, useState, MouseEvent } from "react";
 import * as d3 from "d3";
 import useSize from "@react-hook/size";
 import Select from "react-select";
+import Colors from "@/visualizations/ColorPalette"
+import { formatNumber } from '@/services/formatNumber';
 
 import getData from "./getData";
-import { Moment } from "moment";
 
 import "./Renderer.less";
 
@@ -25,9 +26,8 @@ type TooltipData = {
   }[];
 };
 
-const colors = ["#00BFA5", "#EC407A", "#00BCD4", "#F68D7D"];
-
-const PRIMARY_COLOR = "#B045E6";
+const colors = Object.values(Colors);
+const PRIMARY_COLOR = Colors.Purple;
 
 const PRIMARY_LINE_WIDTH = 8;
 const DEFAULT_LINE_WIDTH = 4;
@@ -40,8 +40,6 @@ const AXIS_Y_LEFT_MARGIN = 24;
 
 const PRIMARY_CONTRACT_PIN_SIZE = 36;
 const DEFAULT_CONTRACT_PIN_SIZE = 20;
-
-const formatNumber = (x: number) => (x !== 0 ? `${Math.floor(x / 1000)}K` : "0");
 
 export default function Renderer(input: any) {
   const data = getData(input.data.rows, input.options);
@@ -64,6 +62,7 @@ function SeriesLineChart({ data, columns }: any) {
     values: [{ contract: "n/a", y: "0", color: "#FF0000" }],
   });
 
+  data["primary"] ??= data[columns[0] ?? ""]
   const [selectedOptions, setSelectedOptions] = useState([{ value: "primary", label: "primary" }]);
 
   const options = columns.map((column: any) => ({
@@ -316,8 +315,8 @@ function createSeriesLineChartAxis(
 ) {
   const xAxis = d3
     .axisBottom<Date>(xScale)
-    .tickFormat(d3.timeFormat("%d.%m"))
-    .ticks(d3.timeDay, 1)
+    .tickFormat(d3.timeFormat("%m.%d"))
+    //.ticks(d3.timeDay, 1)
     .tickSize(0);
   const yAxis = d3
     .axisLeft(yScale)
@@ -425,7 +424,7 @@ function createSeriesLineChartCursor(
     }));
 
     setTooltipData({
-      date: d3.timeFormat("%b %d")(closestXValue),
+      date: d3.timeFormat("%B %d, %Y")(closestXValue),
       values: tooltipValues,
     });
     tooltip.style("transform", `translate(${tooltipX}px, 0px)`).style("opacity", "1");
