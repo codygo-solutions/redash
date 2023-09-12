@@ -12,9 +12,12 @@ import {
 } from "chart.js";
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "react-chartjs-2";
+import Colors from '../../ColorPalette'
 
 import { ExternalTooltipHandler } from "./ExternalTooltipHandler";
 import getChartData from './getChartData';
+
+const colorsArray = Object.values(Colors)
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, BarController);
 export type HorizontalBarChartVariant = "redGradient" | "purpleGradient";
@@ -74,18 +77,15 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
 
     const labels = Object.keys(data.at(0)?.data ?? {})
 
-    const chartData = {
+    setChartData({
       labels,
       datasets: data
         .map((col: any) => ({
           type: 'bar',
           label: col.name,
           data: labels.map((label) => col.data[label]),
-          barThickness: 24,
-          backgroundColor: () => {
-            // @ts-ignore
-            return createGradient(chart.ctx, chart.chartArea, variant);
-          },
+          barThickness: 48,
+          backgroundColor: (args: any) => colorsArray[args.dataIndex % colorsArray.length],
           hoverBorderColor: () => {
             // @ts-ignore
             return createGradient(chart.ctx, chart.chartArea, variant, true);
@@ -101,8 +101,7 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
             return "#000000";
           }
         })),
-    }
-    setChartData(chartData as any);
+    });
     chart.update();
   }, [data, activeElement, chartMouseOver]);
 
