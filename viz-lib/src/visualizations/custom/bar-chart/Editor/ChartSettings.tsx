@@ -98,22 +98,24 @@ export default function ChartSettings({ data, options, onOptionsChange }: any) {
           onChange={handleTypeChange}
         />
       </Section>
-      {/* @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message */}
-      <Section>
-        <Select
-          label="Color Scheme"
-          data-test="BarChart.ColorScheme"
-          defaultValue={options.colorScheme}
-          onChange={(colorScheme: any) => onOptionsChange({ colorScheme })}>
-          {map(colorSchemes, (name, value) => (
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message
-            <Select.Option key={value} data-test={`HorizontalBarChart.ColorScheme.${value}`}>
-              {name}
-              {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
-            </Select.Option>
-          ))}
-        </Select>
-      </Section>
+      {options.type === "horizontal" && (
+        /* @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message */
+        <Section>
+          <Select
+            label="Color Scheme"
+            data-test="BarChart.ColorScheme"
+            defaultValue={options.colorScheme}
+            onChange={(colorScheme: any) => onOptionsChange({ colorScheme })}>
+            {map(colorSchemes, (name, value) => (
+              // @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message
+              <Select.Option key={value} data-test={`BarChart.ColorScheme.${value}`}>
+                {name}
+                {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'Option' does not exist on type '({ class... Remove this comment to see the full error message */}
+              </Select.Option>
+            ))}
+          </Select>
+          </Section>
+      )}
       {map(mappedColumns, (value, type) => (
         <ColumnMappingSelect
           // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'never'.

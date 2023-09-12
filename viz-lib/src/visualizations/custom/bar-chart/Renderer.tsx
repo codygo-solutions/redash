@@ -85,7 +85,7 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
           label: col.name,
           data: labels.map((label) => col.data[label]),
           barThickness: 48,
-          backgroundColor: (args: any) => colorsArray[args.dataIndex % colorsArray.length],
+          backgroundColor: (args: any) => direction === "horizontal" ? createGradient(chart.ctx, chart.chartArea, variant) : colorsArray[args.dataIndex % colorsArray.length],
           hoverBorderColor: () => {
             // @ts-ignore
             return createGradient(chart.ctx, chart.chartArea, variant, true);
