@@ -26,6 +26,7 @@ import pieChartVisualization from "./custom/pie-chart";
 import listVisualization from "./custom/list";
 import multiLineChartVisualization from "./custom/multi-line-chart";
 import singleLineChartVisualization from "./custom/single-line-chart";
+import lineChartVisualization from "./custom/line-chart";
 
 type VisualizationConfig = {
   type: string;
@@ -109,6 +110,7 @@ each(
     listVisualization,
     multiLineChartVisualization,
     singleLineChartVisualization,
+    lineChartVisualization,
     addressableTableVisualization,
     addressableCounterVisualization,
     addressablePieVisualization,
