@@ -43,8 +43,6 @@ const DEFAULT_CONTRACT_PIN_SIZE = 20;
 export default function Renderer(input: any) {
   const data = getData(input.data.rows, input.options);
 
-  console.log(data)
-
   const columns = Object.keys(data);
 
   return <SeriesLineChart data={data} columns={columns} type={input.options.type} />;
