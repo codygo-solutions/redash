@@ -62,25 +62,23 @@ function SeriesLineChart({ data, columns }: any) {
     values: [{ contract: "n/a", y: "0", color: "#FF0000" }],
   });
 
-  data["primary"] ??= data[columns[0] ?? ""]
-  const [selectedOptions, setSelectedOptions] = useState([{ value: "primary", label: "primary" }]);
+  const primaryOption = { value: "primary", label: "primary" }
+  data["primary"] ??= data[columns[0] ?? ""] ?? { data: [] }
+  const [selectedOptions, setSelectedOptions] = useState([primaryOption]);
 
   const options = columns.map((column: any) => ({
     value: column,
     label: column,
   }));
 
-  // const [selected, setSelected] = useState<SelectOption[]>([]);
-  // const contractLoadOptions = useDebouncedLoadOptions("contracts");
-
   const handleSelectChange = (selectedOptions: any) => {
-    setSelectedOptions(selectedOptions);
+    setSelectedOptions(selectedOptions.length === 0 ? [primaryOption] : selectedOptions);
   };
 
   useEffect(() => {
     const svg = d3.select(ref.current);
     const g = svg.append("g").attr("transform", `translate(0,${CHART_BOTTOM_MARGIN})`);
-    const sampleData = data["primary"]?.data ?? [];
+    const sampleData = data["primary"].data;
     const { xScale, yScale } = createScales(width, height, sampleData);
     const selectedColumns = selectedOptions.map(i => i.value);
 
