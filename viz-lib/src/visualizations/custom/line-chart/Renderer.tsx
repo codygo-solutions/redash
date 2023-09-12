@@ -48,10 +48,10 @@ export default function Renderer(input: any) {
 
   const columns = Object.keys(data);
 
-  return <SeriesLineChart data={data} columns={columns} />;
+  return <SeriesLineChart data={data} columns={columns} type={input.options.type} />;
 }
 
-function SeriesLineChart({ data, columns }: any) {
+function SeriesLineChart({ data, columns, type }: any) {
   const ref = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, height] = useSize(containerRef);
@@ -62,17 +62,16 @@ function SeriesLineChart({ data, columns }: any) {
     values: [{ contract: "n/a", y: "0", color: "#FF0000" }],
   });
 
-  const primaryOption = { value: "primary", label: "primary" }
-  data["primary"] ??= data[columns[0] ?? ""] ?? { data: [] }
-  const [selectedOptions, setSelectedOptions] = useState([primaryOption]);
-
   const options = columns.map((column: any) => ({
     value: column,
     label: column,
   }));
 
+  data["primary"] ??= data[columns[0] ?? ""] ?? { data: [] }
+  const [selectedOptions, setSelectedOptions] = useState(options);
+
   const handleSelectChange = (selectedOptions: any) => {
-    setSelectedOptions(selectedOptions.length === 0 ? [primaryOption] : selectedOptions);
+    setSelectedOptions(selectedOptions);
   };
 
   useEffect(() => {
@@ -83,9 +82,10 @@ function SeriesLineChart({ data, columns }: any) {
     const selectedColumns = selectedOptions.map(i => i.value);
 
     createSeriesLineChartAxis(g, xScale, yScale, height);
-    const chartArea = createSeriesLineChart(g, xScale, yScale, width, data, selectedColumns);
+    const chartArea = createSeriesLineChart(type, g, xScale, yScale, width, data, selectedColumns);
     createSeriesLineChartGradients(g, width, height);
     createSeriesLineChartCursor(
+      type,
       tooltipRef,
       setTooltipData,
       chartArea,
@@ -102,65 +102,67 @@ function SeriesLineChart({ data, columns }: any) {
     };
   }, [width, height, selectedOptions]);
 
-  // const handleSelectChange = (values: MultiValue<SelectOption>) => {
-  //   if (values.length <= MAX_SELECTED_OPTIONS) {
-  //     setSelected(values as SelectOption[]);
-  //   }
-  // };
-
   const handleRemoveValue = (e: MouseEvent<HTMLButtonElement>) => {
     const { name: buttonName } = e.currentTarget;
     const removedValue = selectedOptions.find(val => val.label === buttonName);
 
     if (!removedValue) return;
+    if (selectedOptions.length === 1) return;
     handleSelectChange(selectedOptions.filter(val => val.label !== buttonName));
   };
 
   return (
     <div className="line-chart-container">
-      <div className="chart-controls">
-        <div className="chart-title">Your audience</div>
+      {
+        type === "multiple" && (
+          <div className="chart-controls">
+            <div className="chart-title">Your audience</div>
 
-        <div className="chart-typography" style={{ marginLeft: "12px" }}>
-          Compare with:
-        </div>
+            <div className="chart-typography" style={{ marginLeft: "12px" }}>
+              Compare with:
+            </div>
 
-        <Select
-          isMulti
-          placeholder="Insert contract name"
-          options={options}
-          value={selectedOptions}
-          defaultValue={selectedOptions[0]}
-          className="basic-multi-select"
-          controlShouldRenderValue={false}
-          onChange={handleSelectChange}
-        />
+            <Select
+              isMulti
+              placeholder="Insert contract name"
+              options={options}
+              value={selectedOptions}
+              defaultValue={selectedOptions[0]}
+              className="basic-multi-select"
+              controlShouldRenderValue={false}
+              onChange={handleSelectChange}
+            />
 
-        {/* <ContractsSelect
-          mustTypeFirst
-          onChange={handleSelectChange}
-          value={selected}
-          loadOptions={contractLoadOptions}
-          className={`contracts-multi-line-chart ${loading || error ? "pointer-events-none" : ""}`}
-          placeholder="Insert contract name"
-          customizedOptions={ContractsAutocomplete}
-          optionStyles={{ backgroundColor: "white !important" }}
-        /> */}
+            {/* <ContractsSelect
+              mustTypeFirst
+              onChange={handleSelectChange}
+              value={selected}
+              loadOptions={contractLoadOptions}
+              className={`contracts-multi-line-chart ${loading || error ? "pointer-events-none" : ""}`}
+              placeholder="Insert contract name"
+              customizedOptions={ContractsAutocomplete}
+              optionStyles={{ backgroundColor: "white !important" }}
+            /> */}
 
-        <div className="bullets-container">
-          {selectedOptions.map(
-            (val, i) =>
-              val.value !== "primary" && (
-                <div className="bullet-item" key={i} style={{ backgroundColor: `${colors[i]}20`, color: colors[i] }}>
-                  {val.label}
-                  <button name={val.label} className="bullet-button" onClick={handleRemoveValue}>
-                    <Cross fill={colors[i]} />
-                  </button>
-                </div>
-              )
-          )}
-        </div>
-      </div>
+            <div className="bullets-container">
+              {selectedOptions.map(
+                (val, i) => (
+                  <div className="bullet-item" key={i} style={{ backgroundColor: `${colors[i]}20`, color: colors[i] }}>
+                    {val.label}
+                    {
+                      selectedOptions.length > 1 && (
+                        <button name={val.label} className="bullet-button" onClick={handleRemoveValue}>
+                          <Cross fill={colors[i]} />
+                        </button>
+                      )
+                    }
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )
+      }
       <div className="chart-wrapper">
         <div className="tooltip-container" ref={tooltipRef}>
           <div className="chart-typography">{tooltipData.date}</div>
@@ -168,7 +170,6 @@ function SeriesLineChart({ data, columns }: any) {
             <div key={i} className="tooltip-item-wrapper">
               <div
                 className="tooltip-item"
-                // $isPrimary={item.contract === "primary"}
                 style={{ backgroundColor: item.color }}
               />
               <div className="chart-tooltip-value">{item.y}</div>
@@ -263,7 +264,8 @@ function createSeriesLineChartGradients(
     });
 }
 
-function createSeriesLineChart(
+function createSeriesLineChart (
+  type: string,
   g: d3.Selection<SVGGElement, unknown, null, undefined>,
   xScale: d3.ScaleTime<number, number, never>,
   yScale: d3.ScaleLinear<number, number, never>,
@@ -282,7 +284,7 @@ function createSeriesLineChart(
     });
 
   selectedColumns.forEach((columnName, i) => {
-    if (columnName === "primary") {
+    if (type === "single ") {
       chartArea
         .append("path")
         .attr("stroke", "url(#line-primary)")
@@ -336,6 +338,7 @@ function createSeriesLineChartAxis(
 }
 
 function createSeriesLineChartCursor(
+  type: string,
   tooltipRef: React.RefObject<HTMLDivElement>,
   setTooltipData: React.Dispatch<React.SetStateAction<TooltipData>>,
   chartArea: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -369,11 +372,11 @@ function createSeriesLineChartCursor(
     return chartArea
       .append("image")
       .attr("xlink:href", "/static/images/chart-pin.svg")
-      .attr("width", key === "primary" ? PRIMARY_CONTRACT_PIN_SIZE : DEFAULT_CONTRACT_PIN_SIZE)
-      .attr("height", key === "primary" ? PRIMARY_CONTRACT_PIN_SIZE : DEFAULT_CONTRACT_PIN_SIZE)
+      .attr("width", type === "single" ? PRIMARY_CONTRACT_PIN_SIZE : DEFAULT_CONTRACT_PIN_SIZE)
+      .attr("height", type === "single" ? PRIMARY_CONTRACT_PIN_SIZE : DEFAULT_CONTRACT_PIN_SIZE)
       .attr(
         "transform",
-        key === "primary"
+        type === "single"
           ? `translate(-${PRIMARY_CONTRACT_PIN_SIZE / 2}, -${(PRIMARY_CONTRACT_PIN_SIZE - PRIMARY_LINE_WIDTH) / 2})`
           : `translate(-${DEFAULT_CONTRACT_PIN_SIZE / 2}, -${(DEFAULT_CONTRACT_PIN_SIZE - DEFAULT_LINE_WIDTH) / 2})`
       )
@@ -418,7 +421,7 @@ function createSeriesLineChartCursor(
     const tooltipValues = columns.map((column, i) => ({
       contract: column,
       y: formatNumber(data[column].data[closestIndex].y),
-      color: data[column].data[closestIndex].contract === "primary" ? PRIMARY_COLOR : colors[i],
+      color: colors[i],
     }));
 
     setTooltipData({
