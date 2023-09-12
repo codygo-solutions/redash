@@ -27,7 +27,6 @@ type TooltipData = {
 };
 
 const colors = Object.values(Colors);
-const PRIMARY_COLOR = Colors.Purple;
 
 const PRIMARY_LINE_WIDTH = 8;
 const DEFAULT_LINE_WIDTH = 4;
@@ -216,11 +215,11 @@ function createLineGradient(
     .attr("y2", 0)
     .selectAll("stop")
     .data([
-      { offset: "0%", color: "#FFFFFF00" },
+      { offset: "0%", color: `${color}08` },
       { offset: "10%", color: `${color}80` },
       { offset: "50%", color: color },
       { offset: "90%", color: `${color}80` },
-      { offset: "100%", color: "#FFFFFF00" },
+      { offset: "100%", color: `${color}08` },
     ])
     .enter()
     .append("stop")
@@ -239,8 +238,6 @@ function createSeriesLineChartGradients(
   width: number,
   height: number
 ) {
-  createLineGradient(g, PRIMARY_COLOR, "line-primary", width);
-
   g.append("linearGradient")
     .attr("id", "pin-gradient")
     .attr("gradientUnits", "userSpaceOnUse")
@@ -284,24 +281,14 @@ function createSeriesLineChart (
     });
 
   selectedColumns.forEach((columnName, i) => {
-    if (type === "single ") {
-      chartArea
-        .append("path")
-        .attr("stroke", "url(#line-primary)")
-        .style("stroke-width", PRIMARY_LINE_WIDTH)
-        .style("fill", "none")
-        // @ts-ignore
-        .attr("d", createChartLine(data[columnName]?.data ?? []));
-    } else {
-      const gradientId = createLineGradient(g, colors[i], `line-${i}`, width);
-      chartArea
-        .append("path")
-        .attr("stroke", `url(#${gradientId})`)
-        .style("stroke-width", DEFAULT_LINE_WIDTH)
-        .style("fill", "none")
-        // @ts-ignore
-        .attr("d", createChartLine(data[columnName]?.data ?? []));
-    }
+    const gradientId = createLineGradient(g, colors[i], `line-${i}`, width);
+    chartArea
+      .append("path")
+      .attr("stroke", `url(#${gradientId})`)
+      .style("stroke-width", type === "single" ? PRIMARY_LINE_WIDTH : DEFAULT_LINE_WIDTH)
+      .style("fill", "none")
+      // @ts-ignore
+      .attr("d", createChartLine(data[columnName]?.data ?? []));
   });
 
   return chartArea;
