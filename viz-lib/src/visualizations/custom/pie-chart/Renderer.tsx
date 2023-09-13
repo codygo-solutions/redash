@@ -7,10 +7,11 @@ import Colors from "@/visualizations/ColorPalette"
 import { formatNumber } from "../shared/formatNumber";
 
 import "./Renderer.less";
+import getChartData from './getChartData';
 
 interface Datum {
-  title: string;
-  discountPercentage: number;
+  x: string;
+  y: number;
 }
 
 const CIRCLE_THICKNESS = 20;
@@ -24,17 +25,21 @@ const CHART_PADDING = 28;
 
 const BIG_SCREEN_BREAKPOINT = 300;
 
-const MIN_ARC = 4.5;
+const MIN_ARC = 1;
 
 const colors = Object.values(Colors);
 
 export default function Renderer({ options, data }: any) {
-  const slicedData = data.rows.slice(0, 4);
+  const preppedData = getChartData(data.rows, options)
+  const d = Object.entries(preppedData[0].data)
+    .map(([key, val]) => ({ x: key, y: val as number }))
 
-  return <SafePieChart data={slicedData} />;
+  return <SafePieChart data={d} />;
 }
 
-function SafePieChart({ data }: { data: Datum[] }) {
+function SafePieChart ({ data }: { data: Datum[]; }) {
+  const sum = data.reduce<number>((s, d) => s + d.y, 0);
+
   const ref = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, height] = useSize(containerRef);
@@ -51,17 +56,15 @@ function SafePieChart({ data }: { data: Datum[] }) {
 
     const g = svg.append("g").attr("transform", `translate(${chartLeftPadding},${height / 2})`);
 
-    const colorDomain = data.map(({ title }) => title);
+    const colorDomain = data.map(({ x }) => x);
     const colorScale = d3.scaleOrdinal(colors).domain(colorDomain);
 
     const pie = d3
       .pie<Datum>()
-      .value(function(d) {
-        return d.discountPercentage;
-      })
+      .value((d) => d.y)
       .sort(null);
 
-    createPieChart(data, g, pie, colorScale, chartRadius);
+    createPieChart(data, sum, g, pie, colorScale, chartRadius);
     createPieChartTooltip(g);
 
     return () => {
@@ -77,11 +80,11 @@ function SafePieChart({ data }: { data: Datum[] }) {
       <div className="legend-container">
         {data.map((d, i) => (
           <div className="legend-item" key={i}>
-            <div style={{ backgroundColor: colors[i], height: "12px", width: "12px", borderRadius: "9999px" }} />
+            <div style={{ backgroundColor: colors[i % colors.length], height: "12px", width: "12px", borderRadius: "9999px" }} />
 
-            <div className="legend-title">{d.title}</div>
+            <div className="legend-title">{d.x}</div>
 
-            <div className="legend-value">{getPercent(data, d.discountPercentage)}%</div>
+            <div className="legend-value">{getPercent(sum, d.y)}%</div>
           </div>
         ))}
       </div>
@@ -89,18 +92,14 @@ function SafePieChart({ data }: { data: Datum[] }) {
   );
 }
 
-function getPercent(data: Datum[], y: number) {
-  const sum = data.reduce<number>((s, d) => s + d.discountPercentage, 0);
+function getPercent(sum: number, y: number) {
   const percent = (y / sum) * 100;
-
-  if (percent < 1) {
-    return parseFloat(percent.toFixed(1));
-  }
-  return Math.round(percent);
+  return parseFloat(percent.toFixed(1));
 }
 
 function createPieChart(
   data: Datum[],
+  sum: number,
   g: d3.Selection<SVGGElement, unknown, null, undefined>,
   pie: d3.Pie<unknown, Datum>,
   colorScale: d3.ScaleOrdinal<string, string, never>,
@@ -124,7 +123,7 @@ function createPieChart(
     })
     .cornerRadius(CORNER_RADIUS);
 
-  const pieData = createPieData(data);
+  const pieData = createPieData(data, sum);
 
   const arc = g
     .selectAll(".arc")
@@ -139,7 +138,7 @@ function createPieChart(
     .attr("stroke-width", "4px")
     .attr("stroke", "white")
     .attr("fill", function(d) {
-      return colorScale(d.data.title);
+      return colorScale(d.data.x);
     })
     .on("mouseover", function(_, d) {
       d3.select(this)
@@ -154,17 +153,17 @@ function createPieChart(
           return current ? interpolatePath(previous, current) : null;
         });
 
-      const x = d.data.title;
-      const dataItem = data.find(d => d.title === x);
+      const x = d.data.x;
+      const dataItem = data.find(d => d.x === x);
 
       if (dataItem) {
         d3.select("#pie-value")
-          .text(formatNumber(dataItem.discountPercentage))
+          .text(formatNumber(dataItem.y))
           .transition()
           .duration(300)
           .style("opacity", 1);
         d3.select("#pie-title")
-          .text(d.data.title)
+          .text(d.data.x)
           .transition()
           .duration(300)
           .style("opacity", 1);
@@ -217,37 +216,31 @@ function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undef
     .style("font-size", "14px");
 }
 
-function createPieData(data: Datum[]) {
+function createPieData(data: Datum[], sum: number) {
   // enlarge small elements to a threshold, calculate pie chart arc lengths (in percent)
   const itemsBelowThreshold = data.filter(d => {
-    const y = d.discountPercentage;
-    const curPercent = getPercent(data, y);
-
+    const curPercent = getPercent(sum, d.y);
     return curPercent <= MIN_ARC;
   });
   const itemsAboveThreshold = data.filter(d => {
-    const y = d.discountPercentage;
-    const curPercent = getPercent(data, y);
-
+    const curPercent = getPercent(sum, d.y);
     return curPercent > MIN_ARC;
   });
 
   const aboveThresholdFraction = 100 - itemsBelowThreshold.length * MIN_ARC;
-  const aboveThresholdSum = itemsAboveThreshold.reduce((s, d) => s + d.discountPercentage, 0);
+  const aboveThresholdSum = itemsAboveThreshold.reduce((s, d) => s + d.y, 0);
 
   const pieData = data
-    .filter(d => d.discountPercentage > 0)
+    .filter(d => d.y > 0)
     .map(d => {
-      const y = d.discountPercentage;
-
-      const curPercent = getPercent(data, y);
+      const curPercent = getPercent(sum, d.y);
 
       const newPercent =
-        curPercent <= MIN_ARC ? MIN_ARC : (d.discountPercentage / aboveThresholdSum) * aboveThresholdFraction;
+        curPercent <= MIN_ARC ? MIN_ARC : (d.y / aboveThresholdSum) * aboveThresholdFraction;
 
       return {
-        title: d.title,
-        discountPercentage: newPercent,
+        x: d.x,
+        y: newPercent,
       };
     });
 
