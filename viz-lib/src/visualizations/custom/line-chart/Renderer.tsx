@@ -104,7 +104,6 @@ function SeriesLineChart({ data, columns, type }: any) {
     const removedValue = selectedOptions.find(val => val.label === buttonName);
 
     if (!removedValue) return;
-    if (selectedOptions.length === 1) return;
     handleSelectChange(selectedOptions.filter(val => val.label !== buttonName));
   };
 
@@ -146,13 +145,9 @@ function SeriesLineChart({ data, columns, type }: any) {
                 (val, i) => (
                   <div className="bullet-item" key={i} style={{ backgroundColor: `${colors[i]}20`, color: colors[i] }}>
                     {val.label}
-                    {
-                      selectedOptions.length > 1 && (
-                        <button name={val.label} className="bullet-button" onClick={handleRemoveValue}>
-                          <Cross fill={colors[i]} />
-                        </button>
-                      )
-                    }
+                     <button name={val.label} className="bullet-button" onClick={handleRemoveValue}>
+                      <Cross fill={colors[i]} />
+                    </button>
                   </div>
                 )
               )}
