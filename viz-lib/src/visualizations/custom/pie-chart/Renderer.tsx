@@ -4,7 +4,7 @@ import useSize from "@react-hook/size";
 import { interpolatePath } from "d3-interpolate-path";
 import Colors from "@/visualizations/ColorPalette"
 
-import { formatNumber } from "../shared/formatNumber";
+import { formatNumber } from "@/services/formatNumber";
 
 import "./Renderer.less";
 import getChartData from './getChartData';
