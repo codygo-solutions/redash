@@ -21,10 +21,6 @@ import addressableTableVisualization from "./addressable-table";
 import addressableCounterVisualization from "./addressable-counter";
 import addressablePieVisualization from "./addressable-pie";
 
-import verticalBarChartVisualization from "./custom/vertical-bar-chart";
-import horizontalBarChartVisualization from "./custom/horizontal-bar-chart";
-import pieChartVisualization from "./custom/pie-chart";
-import listVisualization from "./custom/list";
 import lineChartVisualization from "./custom/line-chart";
 
 type VisualizationConfig = {
@@ -101,10 +97,6 @@ each(
     sunburstVisualization,
     tableVisualization,
     wordCloudVisualization,
-    verticalBarChartVisualization,
-    horizontalBarChartVisualization,
-    pieChartVisualization,
-    listVisualization,
     lineChartVisualization,
     addressableTableVisualization,
     addressableCounterVisualization,
