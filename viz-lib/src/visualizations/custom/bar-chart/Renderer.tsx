@@ -16,6 +16,7 @@ import Colors from '../../ColorPalette'
 
 import { ExternalTooltipHandler } from "./ExternalTooltipHandler";
 import getChartData from './getChartData';
+import { formatNumber } from '@/services/formatNumber';
 
 const colorsArray = Object.values(Colors)
 
@@ -135,10 +136,26 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
           },
         },
         scales: {
-          // @ts-ignore
-          y: { grid: { display: false, drawBorder: false }, ticks: { font: { size: 12 }, color: "#474E6A" } },
-          // @ts-ignore
-          x: { grid: { display: false, drawBorder: false }, ticks: { font: { size: 12 }, color: "#A6B5D3" } },
+          y: {
+            // @ts-ignore
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              font: { size: 12 }, color: "#474E6A",
+              ...(direction === "vertical" ? {
+                callback: (value) => formatNumber(value as any)
+              } : {}),
+            }
+          },
+          x: {
+            // @ts-ignore
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              font: { size: 12 }, color: "#A6B5D3",
+              ...(direction === "horizontal" ? {
+                callback: (value) => formatNumber(value as any)
+              } : {}),
+            },
+          },
         },
 
         plugins: {
