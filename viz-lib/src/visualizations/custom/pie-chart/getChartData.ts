@@ -101,9 +101,9 @@ export default function getChartData (data: any, options: any) {
   return sortBy(values(series), ({ name }: any) => options.seriesOptions[name]?.zIndex ?? 0)
     .map((r: any) => ({
       name: r.name,
-      data: r.data.reduce((acc: any, cur: any) => {
+      data: Object.entries(r.data.reduce((acc: any, cur: any) => {
         if (cur.x) acc[cur.x] = (acc[cur.x] ?? 0) + cur.y
         return acc
-      }, {})
+      }, {})).map(([key, val]) => ({ x: key, y: val as any }))
     }))
 }

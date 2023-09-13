@@ -31,10 +31,8 @@ const colors = Object.values(Colors);
 
 export default function Renderer({ options, data }: any) {
   const preppedData = getChartData(data.rows, options)
-  const d = Object.entries(preppedData[0].data)
-    .map(([key, val]) => ({ x: key, y: val as number }))
 
-  return <SafePieChart data={d} />;
+  return <SafePieChart data={preppedData[0].data} />;
 }
 
 function SafePieChart ({ data }: { data: Datum[]; }) {
