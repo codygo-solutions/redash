@@ -1,14 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import useSize from "@react-hook/size";
-// import tw from "tailwind-styled-components";
-// import Skeleton from "react-loading-skeleton";
 import { interpolatePath } from "d3-interpolate-path";
+import Colors from "@/visualizations/ColorPalette"
 
-// import { ReactComponent as ChartSkeleton } from "~/shared/assets/skeletons/pie-chart.svg";
 import { formatNumber } from "../shared/formatNumber";
-
-// import Typography from "../../Typography";
 
 import "./Renderer.less";
 
@@ -30,62 +26,10 @@ const BIG_SCREEN_BREAKPOINT = 300;
 
 const MIN_ARC = 4.5;
 
-const colors = ["#B045E6", "#EC407A", "#FFD600", "#00BCD4", "#0091EA"];
-
-// const SkeletonContainer = tw.div`
-// flex items-center justify-center h-full
-// `;
-
-// const SkeletonWrapper = tw.div`
-// w-full flex justify-center
-// `;
-
-// const SkeletonLegend = tw.div`
-// self-end ml-auto flex-[24] flex-y gap-1
-// `;
-
-// const SkeletonLegendItem = tw.div`
-// flex gap-3
-// `;
-
-// const Container = tw.div`
-// w-full h-full flex
-// `;
-
-// const LegendContainer = tw.div<{
-//   $isBigScreen: boolean;
-// }>`
-// flex shrink-0 flex-col gap-2 h-full
-// ${p => (p.$isBigScreen ? "justify-end" : "justify-center")}
-// `;
-
-// const LegendItem = tw.div`
-// flex gap-1 items-center
-// `;
+const colors = Object.values(Colors);
 
 export default function Renderer({ options, data }: any) {
   const slicedData = data.rows.slice(0, 4);
-  const sum = slicedData.reduce((sum: any, d: any) => sum + d.discountPercentage, 0);
-
-  //   if (error || !data?.length || loading || sum <= 0) {
-  //     return (
-  //       <SkeletonContainer>
-  //         <SkeletonWrapper>
-  //           <ChartSkeleton />
-  //         </SkeletonWrapper>
-
-  //         <SkeletonLegend>
-  //           {[...Array(8)].map((_, i) => (
-  //             <SkeletonLegendItem key={i}>
-  //               <Skeleton circle width={12} height={12} />
-  //               <Skeleton containerClassName="flex items-center" width={40} height={4} />
-  //               <Skeleton containerClassName="flex items-center" width={40} height={4} />
-  //             </SkeletonLegendItem>
-  //           ))}
-  //         </SkeletonLegend>
-  //       </SkeletonContainer>
-  //     );
-  //   }
 
   return <SafePieChart data={slicedData} />;
 }

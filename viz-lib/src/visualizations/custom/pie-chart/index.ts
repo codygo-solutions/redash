@@ -1,13 +1,11 @@
 import { merge } from "lodash";
 
 import Renderer from "./Renderer";
-import Editor from "./Editor";
+import Editor from "./Editor/";
 
 const DEFAULT_OPTIONS = {
-  column: "",
-  frequenciesColumn: "",
-  wordLengthLimit: { min: null, max: null },
-  wordCountLimit: { min: null, max: null },
+  seriesOptions: {},
+  columnMapping: {},
 };
 
 export default {
