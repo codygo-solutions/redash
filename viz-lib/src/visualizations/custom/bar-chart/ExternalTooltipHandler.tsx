@@ -1,5 +1,3 @@
-import { formatNumber } from "../shared/formatNumber";
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getOrCreateTooltip = (chart: {
   canvas: { parentNode: { querySelector: (arg0: string) => any; appendChild: (arg0: any) => void } };
