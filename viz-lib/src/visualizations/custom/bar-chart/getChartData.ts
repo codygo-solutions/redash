@@ -104,6 +104,6 @@ export default function getChartData (data: any, options: any) {
       data: Object.entries(r.data.reduce((acc: any, cur: any) => {
         if (cur.x) acc[cur.x] = (acc[cur.x] ?? 0) + cur.y
         return acc
-      }, {})).map(([key, val]) => ({ x: key as any, y: val as any }))
+      }, {})).map(([key, val]: [any, any]) => ({ x: key, y: val }))
     }))
 }

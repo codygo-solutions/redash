@@ -62,13 +62,14 @@ export default function Renderer ({ data, options }: any) {
   );
 }
 
-function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: any) {
+function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: { data: ReturnType<typeof getChartData>, direction: string, variant: HorizontalBarChartVariant }) {
   const chartRef = useRef<ChartJS>(null);
   const [chartData, setChartData] = useState<ChartData<"bar">>({
     datasets: [],
   });
   const [activeElement, setActiveElement] = useState<number | null>(null);
   const [chartMouseOver, setChartMouseOver] = useState(false);
+  const isVertical = direction === "vertical"
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -76,15 +77,12 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
       return;
     }
 
-    const labels = Object.keys(data.at(0)?.data ?? {})
-
     setChartData({
-      labels,
       datasets: data
-        .map((col: any) => ({
+        .map((col) => ({
           type: 'bar',
           label: col.name,
-          data: labels.map((label) => col.data[label]),
+          data: col.data as any,
           barThickness: 48,
           backgroundColor: (args: any) => direction === "horizontal" ? createGradient(chart.ctx, chart.chartArea, variant) : colorsArray[args.dataIndex % colorsArray.length],
           hoverBorderColor: () => {
@@ -120,7 +118,11 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
       }}
       // plugins={[ChartDataLabels]}
       options={{
-        indexAxis: direction === "horizontal" ? "y" : "x",
+        indexAxis: isVertical ? "x" : "y",
+        parsing: {
+          xAxisKey: isVertical ? "x" : "y",
+          yAxisKey: isVertical ? "y" : "x",
+        },
         maintainAspectRatio: false,
         responsive: true,
         layout: {
@@ -137,21 +139,19 @@ function SafeHorizontalBarChart({ data, variant = "redGradient", direction }: an
         },
         scales: {
           y: {
-            // @ts-ignore
-            grid: { display: false, drawBorder: false },
+            grid: { display: false },
             ticks: {
               font: { size: 12 }, color: "#474E6A",
-              ...(direction === "vertical" ? {
+              ...(isVertical ? {
                 callback: (value) => formatNumber(value as any)
               } : {}),
             }
           },
           x: {
-            // @ts-ignore
-            grid: { display: false, drawBorder: false },
+            grid: { display: false },
             ticks: {
               font: { size: 12 }, color: "#A6B5D3",
-              ...(direction === "horizontal" ? {
+              ...(!isVertical ? {
                 callback: (value) => formatNumber(value as any)
               } : {}),
             },
