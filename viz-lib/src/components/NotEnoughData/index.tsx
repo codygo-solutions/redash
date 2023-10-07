@@ -1,6 +1,6 @@
 import React from "react";
 import { NotEnoughDataSvg } from "./Svg";
-import "./index.less";
+// import "./index.less";
 
 export default function NotEnoughData() {
   return (

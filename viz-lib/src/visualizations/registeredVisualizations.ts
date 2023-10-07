@@ -17,6 +17,7 @@ import wordCloudVisualization from "./word-cloud";
 import addressableTableVisualization from "./addressable-table";
 import addressableCounterVisualization from "./addressable-counter";
 import addressablePieVisualization from "./addressable-pie";
+import addressableLineVisualization from "./addressable-line";
 
 type VisualizationConfig = {
   type: string;
@@ -81,22 +82,23 @@ function registerVisualization(config: any) {
 
 each(
   flatten([
-    boxPlotVisualization,
-    chartVisualization,
-    choroplethVisualization,
-    cohortVisualization,
-    counterVisualization,
-    detailsVisualization,
-    funnelVisualization,
-    mapVisualization,
-    pivotVisualization,
-    sankeyVisualization,
-    sunburstVisualization,
+    // boxPlotVisualization,
+    // chartVisualization,
+    // choroplethVisualization,
+    // cohortVisualization,
+    // counterVisualization,
+    // detailsVisualization,
+    // funnelVisualization,
+    // mapVisualization,
+    // pivotVisualization,
+    // sankeyVisualization,
+    // sunburstVisualization,
     tableVisualization,
-    wordCloudVisualization,
+    // wordCloudVisualization,
     addressableTableVisualization,
     addressableCounterVisualization,
     addressablePieVisualization,
+    addressableLineVisualization,
   ]),
   registerVisualization
 );
