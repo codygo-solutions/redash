@@ -9,8 +9,8 @@ const DEFAULT_OPTIONS = {
 };
 
 export default {
-  type: "LINE_CHART",
-  name: "Line Chart",
+  type: "ADDRESSABLE LINE",
+  name: "Line (Addressable)",
   getOptions: (options: any) => merge({}, DEFAULT_OPTIONS, options),
   Renderer,
   Editor,
