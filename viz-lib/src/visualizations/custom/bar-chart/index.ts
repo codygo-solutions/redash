@@ -11,8 +11,8 @@ const DEFAULT_OPTIONS = {
 };
 
 export default {
-  type: "BAR_CHART",
-  name: "Bar Chart",
+  type: "ADDRESSABLE BAR",
+  name: "Bar (Addressable)",
   getOptions: (options: any) => merge({}, DEFAULT_OPTIONS, options),
   Renderer,
   Editor,
