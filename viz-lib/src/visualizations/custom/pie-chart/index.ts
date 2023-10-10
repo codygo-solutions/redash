@@ -9,8 +9,8 @@ const DEFAULT_OPTIONS = {
 };
 
 export default {
-  type: "PIE_CHART",
-  name: "Pie Chart",
+  type: "ADDRESSABLE PIE",
+  name: "Pie (Addressable)",
   getOptions: (options: any) => merge({}, DEFAULT_OPTIONS, options),
   Renderer,
   Editor,

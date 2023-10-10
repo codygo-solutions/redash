@@ -30,9 +30,9 @@ const MIN_ARC = 1;
 const colors = Object.values(Colors);
 
 export default function Renderer({ options, data }: any) {
-  const preppedData = getChartData(data.rows, options)
-
-  return <SafePieChart data={preppedData[0].data} />;
+  const [preppedData] = getChartData(data.rows, options)
+  if (!preppedData) return null;
+  return <SafePieChart data={preppedData.data} />;
 }
 
 function SafePieChart ({ data }: { data: Datum[]; }) {
