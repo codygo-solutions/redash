@@ -6,7 +6,7 @@ import { Section, Select } from "@/components/visualizations/editor";
 
 const MappingTypes = {
   x: { label: "X Column" },
-  y: { label: "Y Columns" },
+  y: { label: "Y Columns", multiple: true },
   series: { label: "Group by" },
   yError: { label: "Errors column" },
   size: { label: "Bubble Size Column" },
