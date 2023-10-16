@@ -17,8 +17,7 @@ import sunburstVisualization from "./sunburst";
 import wordCloudVisualization from "./word-cloud";
 import addressableTableVisualization from "./addressable-table";
 import addressableCounterVisualization from "./addressable-counter";
-
-import barChartVisualization from "./custom/bar-chart";
+import addressableBarChartVisualization from "./addressable-bar-chart";
 
 type VisualizationConfig = {
   type: string;
@@ -94,9 +93,9 @@ each(
     sunburstVisualization,
     tableVisualization,
     wordCloudVisualization,
-    barChartVisualization,
     addressableTableVisualization,
     addressableCounterVisualization,
+    addressableBarChartVisualization,
   ]),
   registerVisualization
 );

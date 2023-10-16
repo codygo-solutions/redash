@@ -12,7 +12,7 @@ import {
 } from "chart.js";
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "react-chartjs-2";
-import Colors from '../../ColorPalette'
+import Colors from '../ColorPalette'
 
 import { ExternalTooltipHandler } from "./ExternalTooltipHandler";
 import getChartData from './getChartData';
