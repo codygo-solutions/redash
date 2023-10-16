@@ -168,8 +168,8 @@ function SeriesLineChart({ data, columns, type }: any) {
             </div>
           ))}
         </div>
-        <div ref={containerRef} style={{ height: "100%" }}>
-          <svg className="mt-8" ref={ref} width="100%" height="100%"></svg>
+        <div ref={containerRef} style={{ height: "100%", paddingTop: "2rem" }}>
+          <svg ref={ref} width="100%" height="100%"></svg>
         </div>
       </div>
     </div>
