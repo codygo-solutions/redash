@@ -1,7 +1,7 @@
 import { merge } from "lodash";
 
 import Renderer from "./Renderer";
-import Editor from "./Editor/";
+import Editor from "./Editor";
 
 const DEFAULT_OPTIONS = {
   seriesOptions: {},
