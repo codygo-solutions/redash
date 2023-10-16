@@ -34,11 +34,12 @@ function box() {
         ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n))
         : d3.range(n);
 
-      // Compute the new x-scale.
-      const x1 = d3.scaleLinear()
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+      const x1 = d3.scale
+        .linear()
         // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         .domain((domain && domain.call(this, d, i)) || [min, max])
-        .range([height, 0]) as any;
+        .range([height, 0]);
 
       // Retrieve the old x-scale, if this is an update.
       const x0 =

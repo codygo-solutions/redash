@@ -1,4 +1,4 @@
-import * as d3 from "d3";
+import d3 from "d3";
 import cloud from "d3-cloud";
 import { each, filter, map, min, max, sortBy, toString } from "lodash";
 import React, { useMemo, useState, useEffect } from "react";
@@ -69,7 +69,9 @@ function prepareWords(rows: any, options: any) {
 
   // Add additional attributes
   const counts = map(result, item => item.count);
-  const wordSize = d3.scaleLinear()
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const wordSize = d3.scale
+    .linear()
     .domain([min(counts), max(counts)])
     .range([10, 100]); // min/max word size
   const color = d3.scaleOrdinal(d3.schemeCategory10);
