@@ -1,5 +1,5 @@
 import { map, each } from "lodash";
-import * as d3 from "d3";
+import d3 from "d3";
 import React, { useState, useEffect } from "react";
 import resizeObserver from "@/services/resizeObserver";
 import { RendererPropTypes } from "@/visualizations/prop-types";
@@ -54,9 +54,11 @@ function render(container: any, data: any, { xAxisLabel, yAxisLabel }: any) {
   let d = [];
 
   const columns = map(data.columns, col => col.name);
-  const xscale = d3.scaleBand()
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const xscale = d3.scale
+    .ordinal()
     .domain(columns)
-    .range([0, containerWidth - margin.left - margin.right]) as any;
+    .rangeBands([0, containerWidth - margin.left - margin.right]);
 
   let boxWidth;
   if (columns.length > 1) {
@@ -76,7 +78,9 @@ function render(container: any, data: any, { xAxisLabel, yAxisLabel }: any) {
     });
   });
 
-  const yscale = d3.scaleLinear()
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const yscale = d3.scale
+    .linear()
     .domain([min * 0.99, max * 1.01])
     .range([height, 0]);
 
