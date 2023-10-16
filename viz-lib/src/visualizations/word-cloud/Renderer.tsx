@@ -74,7 +74,8 @@ function prepareWords(rows: any, options: any) {
     .linear()
     .domain([min(counts), max(counts)])
     .range([10, 100]); // min/max word size
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const color = d3.scale.category20();
 
   each(result, (item, index) => {
     item.size = wordSize(item.count);
