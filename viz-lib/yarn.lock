@@ -1880,6 +1880,11 @@
   resolved "https://registry.yarnpkg.com/@types/d3-array/-/d3-array-2.12.5.tgz#2aa77da81982e1d6594d66e1f4dd20a737dd4d2a"
   integrity sha512-n8KvX5zWSPUclz2P4JPydB499+/Agva/0Or+eYBuxRNwczDpIY8l/WgE/vcNT53he+vqLtJQBUtwCnPSpPyyUg==
 
+"@types/d3-array@^3.0.8":
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/@types/d3-array/-/d3-array-3.0.8.tgz#a5d0687a12b48142c6f124d5e3796054e91bcea5"
+  integrity sha512-2xAVyAUgaXHX9fubjcCbGAUOqYfRJN1em1EKR2HfzWBpObZhwfnZKvofTN4TplMqJdFQao61I+NVSai/vnBvDQ==
+
 "@types/d3-axis@^2":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@types/d3-axis/-/d3-axis-2.1.4.tgz#c92dc45496d1d09bcc3fe6a0f0608ecb0b159cf0"
@@ -4160,6 +4165,13 @@ d3-array@1, d3-array@^1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/d3-array/-/d3-array-1.2.4.tgz#635ce4d5eea759f6f605863dbcfc30edc737f71f"
   integrity sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==
+
+d3-array@^3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/d3-array/-/d3-array-3.2.4.tgz#15fec33b237f97ac5d7c986dc77da273a8ed0bb5"
+  integrity sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==
+  dependencies:
+    internmap "1 - 2"
 
 d3-cloud@^1.2.4:
   version "1.2.5"
@@ -6496,6 +6508,11 @@ internal-slot@^1.0.5:
     get-intrinsic "^1.2.0"
     has "^1.0.3"
     side-channel "^1.0.4"
+
+"internmap@1 - 2":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/internmap/-/internmap-2.0.3.tgz#6685f23755e43c524e251d29cbc97248e3061009"
+  integrity sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==
 
 interpret@^1.4.0:
   version "1.4.0"

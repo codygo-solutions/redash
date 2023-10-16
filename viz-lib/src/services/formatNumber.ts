@@ -1,6 +1,8 @@
 const units = ["", "K", "M", "B", "T", "P", "E"];
 
-export function formatNumber(v1: number) {
+export function formatNumber (v1: number) {
+  if (typeof v1 !== "number") v1 = Number(v1);
+  if (isNaN(v1)) return "0";
   const [, expNum, expSuffix] = /^(.+)(e\+.+)$/.exec(v1.toString()) || [];
 
   const v = Number(Number(expNum || v1).toFixed(2));

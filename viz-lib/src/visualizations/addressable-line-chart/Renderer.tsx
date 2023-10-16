@@ -1,6 +1,7 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState, MouseEvent } from "react";
+import React, { useEffect, useRef, useState, MouseEvent } from "react"
 import * as d3 from "d3";
+import * as d3Array from "d3-array";
 import useSize from "@react-hook/size";
 import Select from "react-select";
 import Colors from "@/visualizations/ColorPalette"
@@ -13,14 +14,14 @@ import "./Renderer.less";
 import Cross from "./Cross";
 
 interface Datum {
-  x: Moment;
+  x: string;
   y: number;
 }
 
 type TooltipData = {
   date: string;
   values: {
-    x: Moment;
+    contract: string;
     y: number;
     color: string;
   }[];
@@ -48,7 +49,7 @@ export default function Renderer(input: any) {
   return <SeriesLineChart data={data} columns={columns} type={input.options.type} />;
 }
 
-function SeriesLineChart({ data, columns, type }: any) {
+function SeriesLineChart({ data, columns, type }: { data: Record<string, Datum[]>, columns: string[], type: string }) {
   const ref = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, height] = useSize(containerRef);
@@ -59,12 +60,11 @@ function SeriesLineChart({ data, columns, type }: any) {
     values: [{ contract: "n/a", y: "0", color: "#FF0000" }],
   });
 
-  const options = columns.map((column: any) => ({
+  const options = columns.map((column) => ({
     value: column,
     label: column,
   }));
 
-  data["primary"] ??= data[columns[0] ?? ""] ?? { data: [] }
   const [selectedOptions, setSelectedOptions] = useState(options);
 
   const handleSelectChange = (selectedOptions: any) => {
@@ -74,9 +74,9 @@ function SeriesLineChart({ data, columns, type }: any) {
   useEffect(() => {
     const svg = d3.select(ref.current);
     const g = svg.append("g").attr("transform", `translate(0,${CHART_BOTTOM_MARGIN})`);
-    const sampleData = data["primary"].data;
-    const { xScale, yScale } = createScales(width, height, sampleData);
     const selectedColumns = selectedOptions.map(i => i.value);
+    const sampleData = selectedColumns.map((c) => data[c]?.data).filter(Boolean).flat();
+    const { xScale, yScale } = createScales(width, height, sampleData);
 
     createSeriesLineChartAxis(g, xScale, yScale, height);
     const chartArea = createSeriesLineChart(type, g, xScale, yScale, width, data, selectedColumns);
@@ -168,7 +168,7 @@ function SeriesLineChart({ data, columns, type }: any) {
             </div>
           ))}
         </div>
-        <div ref={containerRef} style={{ height: "100%", paddingTop: "2rem" }}>
+        <div ref={containerRef} style={{ height: "100%" }}>
           <svg ref={ref} width="100%" height="100%"></svg>
         </div>
       </div>
@@ -176,16 +176,17 @@ function SeriesLineChart({ data, columns, type }: any) {
   );
 }
 
-function createScales(width: number, height: number, sampleData: any) {
-  const xExtent = d3.extent(sampleData, d => d.x);
-  const xScale = d3
-    .scaleTime()
+function createScales (width: number, height: number, fullData: Datum[]) {
+  const xExtent = d3.extent(fullData, d => d.x);
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'time' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const xScale = d3.time.scale()
     .domain(xExtent)
     .range([0, width - AXIS_Y_LEFT_MARGIN]);
 
-  const yExtent = d3.extent(sampleData, d => d.y);
-  const yScale = d3
-    .scaleLinear()
+  const yExtent = d3.extent(fullData, d => Number(d.y));
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'typeof im... Remove this comment to see the full error message
+  const yScale = d3.scale
+    .linear()
     .domain([0, yExtent[1]])
     .range([height - AXIS_X_BOTTOM_MARGIN, 0])
     .nice();
@@ -261,11 +262,11 @@ function createSeriesLineChart (
   yScale: d3.ScaleLinear<number, number, never>,
   width: number,
   data: any,
-  selectedColumns: any
+  selectedColumns: string[]
 ) {
   const chartArea = g.append("g");
-  const createChartLine = d3
-    .line<Datum>()
+  const createChartLine = d3.svg.line()
+    .interpolate("basis")
     .x(function(d) {
       return xScale(d.x);
     })
@@ -294,12 +295,16 @@ function createSeriesLineChartAxis(
   height: number
 ) {
   const xAxis = d3
-    .axisBottom<Date>(xScale)
-    .tickFormat(d3.timeFormat("%m.%d"))
+    .svg.axis()
+    .orient("bottom")
+    .scale(xScale)
+    .tickFormat(d3.time.format("%m.%d"))
     //.ticks(d3.timeDay, 1)
     .tickSize(0);
   const yAxis = d3
-    .axisLeft(yScale)
+    .svg.axis()
+    .scale(yScale)
+    .orient("left")
     .tickFormat(x => formatNumber(x as number))
     .tickSize(0);
 
@@ -325,9 +330,9 @@ function createSeriesLineChartCursor(
   xScale: d3.ScaleTime<number, number, never>,
   yScale: d3.ScaleLinear<number, number, never>,
   height: number,
-  sampleData: any,
+  fullData: Datum[],
   data: any,
-  columns: any
+  columns: string[]
 ) {
   const chartWidth = chartArea.node()?.getBBox().width;
   const chartHeight = chartArea.node()?.getBBox().height;
@@ -348,7 +353,7 @@ function createSeriesLineChartCursor(
 
   const xAccessor = (d: Datum) => d?.x;
 
-  const tooltipCircles = columns.map(function(key: any) {
+  const tooltipCircles = columns.map(function(key) {
     return chartArea
       .append("image")
       .attr("xlink:href", "/static/images/chart-pin.svg")
@@ -374,18 +379,18 @@ function createSeriesLineChartCursor(
     .on("mouseleave", onMouseLeave);
 
   function onMouseMove(this: SVGRectElement | null, event: MouseEvent) {
-    const mousePosition = d3.pointer(event, this);
+    const mousePosition = d3.mouse(this);
     const hoveredDate = xScale.invert(mousePosition[0]);
     const getDistanceFromHoveredDate = (d: Datum) => Math.abs(xAccessor(d).valueOf() - hoveredDate.valueOf());
 
-    const closestIndex = d3.leastIndex(
-      sampleData,
+    const closestIndex = d3Array.leastIndex(
+      fullData,
       (a, b) => getDistanceFromHoveredDate(a) - getDistanceFromHoveredDate(b)
     );
 
     if (!closestIndex) return;
 
-    const closestDataPoint = sampleData[closestIndex];
+    const closestDataPoint = fullData[closestIndex];
     const closestXValue = xAccessor(closestDataPoint);
 
     xAxisLine.attr("x", xScale(closestXValue));
@@ -405,7 +410,7 @@ function createSeriesLineChartCursor(
     }));
 
     setTooltipData({
-      date: d3.timeFormat("%B %d, %Y")(closestXValue),
+      date: d3.time.format("%B %d, %Y")(new Date(closestXValue)),
       values: tooltipValues,
     });
     tooltip.style("transform", `translate(${tooltipX}px, 0px)`).style("opacity", "1");
