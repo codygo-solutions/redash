@@ -63,8 +63,8 @@ function SafePieChart ({ data }: { data: Datum[]; }) {
       .value((d) => d.y)
       .sort(null);
 
-    createPieChart(data, sum, g, pie, colorScale, chartRadius);
-    createPieChartTooltip(g);
+    const { tooltipTitle, tooltipValue } = createPieChartTooltip(g);
+    createPieChart(data, sum, g, pie, colorScale, chartRadius, tooltipTitle, tooltipValue);
 
     return () => {
       svg.selectAll("*").remove();
@@ -102,7 +102,9 @@ function createPieChart(
   g: d3.Selection<SVGGElement, unknown, null, undefined>,
   pie: d3.Pie<unknown, Datum>,
   colorScale: d3.ScaleOrdinal<string, string, never>,
-  chartRadius: number
+  chartRadius: number,
+  tooltipTitle: string,
+  tooltipValue: string,
 ) {
   const path = d3
     .arc<d3.PieArcDatum<Datum>>()
@@ -156,12 +158,12 @@ function createPieChart(
       const dataItem = data.find(d => d.x === x);
 
       if (dataItem) {
-        d3.select("#pie-value")
+        d3.select(`#${tooltipValue}`)
           .text(formatNumber(dataItem.y))
           .transition()
           .duration(300)
           .style("opacity", 1);
-        d3.select("#pie-title")
+        d3.select(`#${tooltipTitle}`)
           .text(d.data.x)
           .transition()
           .duration(300)
@@ -180,11 +182,11 @@ function createPieChart(
 
           return current ? interpolatePath(previous, current) : null;
         });
-      d3.select("#pie-value")
+      d3.select(`#${tooltipValue}`)
         .transition()
         .duration(300)
         .style("opacity", 0);
-      d3.select("#pie-title")
+      d3.select(`#${tooltipTitle}`)
         .transition()
         .duration(300)
         .style("opacity", 0);
@@ -194,8 +196,10 @@ function createPieChart(
 }
 
 function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undefined>) {
+  const tooltipTitle = `pie-title-${crypto.randomUUID()}`;
+  const tooltipValue = `pie-value-${crypto.randomUUID()}`;
   g.append("text")
-    .attr("id", "pie-value")
+    .attr("id", tooltipTitle)
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .attr("letter-spacing", "-2px")
@@ -206,13 +210,18 @@ function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undef
     .style("font-size", "48px");
 
   g.append("text")
-    .attr("id", "pie-title")
+    .attr("id", tooltipValue)
     .attr("text-anchor", "middle")
     .attr("transform", `translate(0, 40)`)
     .style("opacity", 0)
     .style("font-family", "Inter")
     .style("fill", "#353B4F")
     .style("font-size", "14px");
+
+  return {
+    tooltipTitle,
+    tooltipValue,
+  }
 }
 
 function createPieData(data: Datum[], sum: number) {
