@@ -56,15 +56,24 @@ function SafePieChart ({ data }: { data: Datum[]; }) {
     const g = svg.append("g").attr("transform", `translate(${chartLeftPadding},${height / 2})`);
 
     const colorDomain = data.map(({ x }) => x);
-    const colorScale = d3.scaleOrdinal(colors).domain(colorDomain);
 
-    const pie = d3
+    // @ts-ignore
+    const colorScale = d3.scale
+      .ordinal()
+      .domain(colorDomain)
+      .range(colors);
+
+    // @ts-ignore
+    const pie = d3.layout
       .pie<Datum>()
-      .value((d) => d.y)
+      // @ts-ignore
+      .value(function(d) {
+        return d.y;
+      })
       .sort(null);
 
-    const { tooltipTitle, tooltipValue } = createPieChartTooltip(g);
-    createPieChart(data, sum, g, pie, colorScale, chartRadius, tooltipTitle, tooltipValue);
+    createPieChart(data, sum, g, pie, colorScale, chartRadius);
+    createPieChartTooltip(g);
 
     return () => {
       svg.selectAll("*").remove();
@@ -102,23 +111,25 @@ function createPieChart(
   g: d3.Selection<SVGGElement, unknown, null, undefined>,
   pie: d3.Pie<unknown, Datum>,
   colorScale: d3.ScaleOrdinal<string, string, never>,
-  chartRadius: number,
-  tooltipTitle: string,
-  tooltipValue: string,
+  chartRadius: number
 ) {
-  const path = d3
+  const path = d3.svg
+    // @ts-ignore
     .arc<d3.PieArcDatum<Datum>>()
     .outerRadius(chartRadius)
     .innerRadius(chartRadius - CIRCLE_THICKNESS)
+    // @ts-ignore
     .startAngle(function(d) {
       return d.startAngle - SEGMENTS_GROW;
     })
     .cornerRadius(CORNER_RADIUS);
 
-  const pathHover = d3
+  const pathHover = d3.svg
+    // @ts-ignore
     .arc<d3.PieArcDatum<Datum>>()
     .innerRadius(chartRadius + CIRCLE_EXPAND)
     .outerRadius(chartRadius - CIRCLE_THICKNESS - CIRCLE_EXPAND)
+    // @ts-ignore
     .startAngle(function(d) {
       return d.startAngle - SEGMENTS_GROW;
     })
@@ -141,7 +152,7 @@ function createPieChart(
     .attr("fill", function(d) {
       return colorScale(d.data.x);
     })
-    .on("mouseover", function(_, d) {
+    .on("mouseover", function(d) {
       d3.select(this)
         .transition()
         .duration(300)
@@ -158,12 +169,12 @@ function createPieChart(
       const dataItem = data.find(d => d.x === x);
 
       if (dataItem) {
-        d3.select(`#${tooltipValue}`)
+        g.select(".pie-value")
           .text(formatNumber(dataItem.y))
           .transition()
           .duration(300)
           .style("opacity", 1);
-        d3.select(`#${tooltipTitle}`)
+        g.select(".pie-title")
           .text(d.data.x)
           .transition()
           .duration(300)
@@ -182,24 +193,22 @@ function createPieChart(
 
           return current ? interpolatePath(previous, current) : null;
         });
-      d3.select(`#${tooltipValue}`)
+      g.select(".pie-value")
         .transition()
         .duration(300)
         .style("opacity", 0);
-      d3.select(`#${tooltipTitle}`)
+      g.select(".pie-title")
         .transition()
         .duration(300)
         .style("opacity", 0);
     });
 
-  g.select(".arc:first-child").raise();
+  // g.select(".arc:first-child").raise();
 }
 
 function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undefined>) {
-  const tooltipTitle = `pie-title-${crypto.randomUUID()}`;
-  const tooltipValue = `pie-value-${crypto.randomUUID()}`;
   g.append("text")
-    .attr("id", tooltipTitle)
+    .attr("class", "pie-value")
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .attr("letter-spacing", "-2px")
@@ -210,18 +219,13 @@ function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undef
     .style("font-size", "48px");
 
   g.append("text")
-    .attr("id", tooltipValue)
+    .attr("class", "pie-title")
     .attr("text-anchor", "middle")
     .attr("transform", `translate(0, 40)`)
     .style("opacity", 0)
     .style("font-family", "Inter")
     .style("fill", "#353B4F")
     .style("font-size", "14px");
-
-  return {
-    tooltipTitle,
-    tooltipValue,
-  }
 }
 
 function createPieData(data: Datum[], sum: number) {
