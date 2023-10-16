@@ -2,7 +2,7 @@
  * The following is based on @chrisrzhou's example from: http://bl.ocks.org/chrisrzhou/d5bdd8546f64ca0e4366.
  */
 
-import d3 from "d3";
+import * as d3 from "d3";
 import { has, map, keys, groupBy, sortBy, filter, find, compact, first, every, identity } from "lodash";
 
 const exitNode = "<<<Exit>>>";
