@@ -1,4 +1,4 @@
-import { isArray, map, includes, each, difference } from "lodash";
+import { isArray, map, mapValues, includes, some, each, difference, toNumber } from "lodash";
 import React, { useMemo } from "react";
 import { UpdateOptionsStrategy } from "@/components/visualizations/editor/createTabbedEditor";
 import { EditorPropTypes } from "@/visualizations/prop-types";
@@ -10,7 +10,7 @@ function getMappedColumns(options: any, availableColumns: any) {
   const availableTypes = ["x", "y"];
   each(availableTypes, type => {
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    mappedColumns[type] = null;
+    mappedColumns[type] = ColumnMappingSelect.MappingTypes[type].multiple ? [] : null;
   });
 
   availableColumns = map(availableColumns, c => c.name);
@@ -19,8 +19,14 @@ function getMappedColumns(options: any, availableColumns: any) {
   each(options.columnMapping, (type, column) => {
     if (includes(availableColumns, column) && includes(availableTypes, type)) {
       // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      mappedColumns[type] = column;
-
+      const { multiple } = ColumnMappingSelect.MappingTypes[type];
+      if (multiple) {
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        mappedColumns[type].push(column);
+      } else {
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        mappedColumns[type] = column;
+      }
       usedColumns.push(column);
     }
   });
@@ -49,7 +55,7 @@ function mappedColumnsToColumnMappings(mappedColumns: any) {
   return result;
 }
 
-export default function GeneralSettings({ options, data, onOptionsChange }: any) {
+export default function ChartSettings({ data, options, onOptionsChange }: any) {
   const { mappedColumns, unusedColumns } = useMemo(() => getMappedColumns(options, data.columns), [
     options,
     data.columns,
@@ -82,4 +88,4 @@ export default function GeneralSettings({ options, data, onOptionsChange }: any)
   );
 }
 
-GeneralSettings.propTypes = EditorPropTypes;
+ChartSettings.propTypes = EditorPropTypes;

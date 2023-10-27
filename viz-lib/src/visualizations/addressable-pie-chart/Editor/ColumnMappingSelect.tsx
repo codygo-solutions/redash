@@ -1,14 +1,16 @@
 // @ts-nocheck
 
-import { isString, map, uniq, flatten, filter, sortBy } from "lodash";
+import { isString, map, uniq, flatten, filter, sortBy, keys } from "lodash";
 import React from "react";
 import { Section, Select } from "@/components/visualizations/editor";
 
 const MappingTypes = {
   x: { label: "X Column" },
-  y: { label: "Y Column" },
+  y: { label: "Y Columns", multiple: true },
   series: { label: "Group by" },
-  thumbnail: { label: "Thumbnail Link" },
+  yError: { label: "Errors column" },
+  size: { label: "Bubble Size Column" },
+  zVal: { label: "Color Column" },
 };
 
 type OwnProps = {
@@ -24,7 +26,7 @@ export default function ColumnMappingSelect({ value, availableColumns, type, onC
   const options = sortBy(filter(uniq(flatten([availableColumns, value])), v => isString(v) && v !== ""));
 
   // this swaps the ui, as the data will be swapped on render
-  const { label } = MappingTypes[type];
+  const { label, multiple } = MappingTypes[type];
 
   return (
     // @ts-expect-error ts-migrate(2745) FIXME: This JSX tag's 'children' prop expects type 'never... Remove this comment to see the full error message
@@ -32,9 +34,10 @@ export default function ColumnMappingSelect({ value, availableColumns, type, onC
       <Select
         label={label}
         data-test={`Chart.ColumnMapping.${type}`}
+        mode={multiple ? "multiple" : "default"}
         allowClear
         showSearch
-        placeholder={"Choose column..."}
+        placeholder={multiple ? "Choose columns..." : "Choose column..."}
         value={value || undefined}
         // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         onChange={(column: any) => onChange(column || null, type)}>

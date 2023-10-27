@@ -1,18 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import useSize from "@react-hook/size";
-// import tw from "tailwind-styled-components";
-// import Skeleton from "react-loading-skeleton";
 import { interpolatePath } from "d3-interpolate-path";
+import Colors from "@/visualizations/ColorPalette"
 
-// import { ReactComponent as ChartSkeleton } from "~/shared/assets/skeletons/pie-chart.svg";
 import { formatNumber } from "@/services/formatNumber";
 
-import getData from "./getData";
-
-// import Typography from "../../Typography";
-
 import "./Renderer.less";
+import getChartData from './getChartData';
 
 interface Datum {
   x: string;
@@ -30,80 +25,20 @@ const CHART_PADDING = 28;
 
 const BIG_SCREEN_BREAKPOINT = 300;
 
-const MIN_ARC = 4.5;
+const MIN_ARC = 1;
 
-const colors = ["#B045E6", "#EC407A", "#FFD600", "#00BCD4", "#0091EA"];
+const colors = Object.values(Colors);
 
-// const SkeletonContainer = tw.div`
-// flex items-center justify-center h-full
-// `;
-
-// const SkeletonWrapper = tw.div`
-// w-full flex justify-center
-// `;
-
-// const SkeletonLegend = tw.div`
-// self-end ml-auto flex-[24] flex-y gap-1
-// `;
-
-// const SkeletonLegendItem = tw.div`
-// flex gap-3
-// `;
-
-// const Container = tw.div`
-// w-full h-full flex
-// `;
-
-// const LegendContainer = tw.div<{
-//   $isBigScreen: boolean;
-// }>`
-// flex shrink-0 flex-col gap-2 h-full
-// ${p => (p.$isBigScreen ? "justify-end" : "justify-center")}
-// `;
-
-// const LegendItem = tw.div`
-// flex gap-1 items-center
-// `;
-
-interface SelectedColumn {
-  data: Datum[];
+export default function Renderer({ options, data }: any) {
+  const preppedData = getChartData(data.rows, options)
+  return <div className="pie-chart-wrapper">
+    {preppedData.map((p, i) => (<SafePieChart key={i} data={p.data} />))}
+  </div>
 }
 
-export default function Renderer(input: any) {
-  const rawData = getData(input.data.rows, input.options) as any;
+function SafePieChart ({ data }: { data: Datum[]; }) {
+  const sum = data.reduce<number>((s, d) => s + d.y, 0);
 
-  const columns = Object.keys(rawData);
-
-  const selectedColumn = rawData[columns[0]] as SelectedColumn;
-
-  const data = selectedColumn ? selectedColumn.data : [];
-
-  //const sum = slicedData.reduce((sum: any, d: any) => sum + d.y, 0);
-
-  //   if (error || !data?.length || loading || sum <= 0) {
-  //     return (
-  //       <SkeletonContainer>
-  //         <SkeletonWrapper>
-  //           <ChartSkeleton />
-  //         </SkeletonWrapper>
-
-  //         <SkeletonLegend>
-  //           {[...Array(8)].map((_, i) => (
-  //             <SkeletonLegendItem key={i}>
-  //               <Skeleton circle width={12} height={12} />
-  //               <Skeleton containerClassName="flex items-center" width={40} height={4} />
-  //               <Skeleton containerClassName="flex items-center" width={40} height={4} />
-  //             </SkeletonLegendItem>
-  //           ))}
-  //         </SkeletonLegend>
-  //       </SkeletonContainer>
-  //     );
-  //   }
-
-  return <SafePieChart data={data} />;
-}
-
-function SafePieChart({ data }: { data: Datum[] }) {
   const ref = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, height] = useSize(containerRef);
@@ -137,7 +72,7 @@ function SafePieChart({ data }: { data: Datum[] }) {
       })
       .sort(null);
 
-    createPieChart(data, g, pie, colorScale, chartRadius);
+    createPieChart(data, sum, g, pie, colorScale, chartRadius);
     createPieChartTooltip(g);
 
     return () => {
@@ -146,23 +81,18 @@ function SafePieChart({ data }: { data: Datum[] }) {
   }, [width, height]);
 
   return (
-    <div className="chart-container">
-      <div
-        style={{
-          // @ts-ignore
-          flexGrow: "1",
-        }}
-        ref={containerRef}>
+    <div className="pie-chart-container">
+      <div style={{ flexGrow: "1" }} ref={containerRef}>
         <svg ref={ref} width="100%" height="100%"></svg>
       </div>
       <div className="legend-container">
         {data.map((d, i) => (
           <div className="legend-item" key={i}>
-            <div style={{ backgroundColor: colors[i], height: "12px", width: "12px", borderRadius: "9999px" }} />
+            <div style={{ backgroundColor: colors[i % colors.length], height: "12px", width: "12px", borderRadius: "9999px" }} />
 
             <div className="legend-title">{d.x}</div>
 
-            <div className="legend-value">{getPercent(data, d.y)}%</div>
+            <div className="legend-value">{getPercent(sum, d.y)}%</div>
           </div>
         ))}
       </div>
@@ -170,18 +100,14 @@ function SafePieChart({ data }: { data: Datum[] }) {
   );
 }
 
-function getPercent(data: Datum[], y: number) {
-  const sum = data.reduce<number>((s, d) => s + d.y, 0);
+function getPercent(sum: number, y: number) {
   const percent = (y / sum) * 100;
-
-  if (percent < 1) {
-    return parseFloat(percent.toFixed(1));
-  }
-  return Math.round(percent);
+  return parseFloat(percent.toFixed(1));
 }
 
 function createPieChart(
   data: Datum[],
+  sum: number,
   g: d3.Selection<SVGGElement, unknown, null, undefined>,
   pie: d3.Pie<unknown, Datum>,
   colorScale: d3.ScaleOrdinal<string, string, never>,
@@ -208,7 +134,8 @@ function createPieChart(
       return d.startAngle - SEGMENTS_GROW;
     })
     .cornerRadius(CORNER_RADIUS);
-  const pieData = createPieData(data);
+
+  const pieData = createPieData(data, sum);
 
   const arc = g
     .selectAll(".arc")
@@ -301,18 +228,14 @@ function createPieChartTooltip(g: d3.Selection<SVGGElement, unknown, null, undef
     .style("font-size", "14px");
 }
 
-function createPieData(data: Datum[]) {
+function createPieData(data: Datum[], sum: number) {
   // enlarge small elements to a threshold, calculate pie chart arc lengths (in percent)
   const itemsBelowThreshold = data.filter(d => {
-    const y = d.y;
-    const curPercent = getPercent(data, y);
-
+    const curPercent = getPercent(sum, d.y);
     return curPercent <= MIN_ARC;
   });
   const itemsAboveThreshold = data.filter(d => {
-    const y = d.y;
-    const curPercent = getPercent(data, y);
-
+    const curPercent = getPercent(sum, d.y);
     return curPercent > MIN_ARC;
   });
 
@@ -322,11 +245,10 @@ function createPieData(data: Datum[]) {
   const pieData = data
     .filter(d => d.y > 0)
     .map(d => {
-      const y = d.y;
+      const curPercent = getPercent(sum, d.y);
 
-      const curPercent = getPercent(data, y);
-
-      const newPercent = curPercent <= MIN_ARC ? MIN_ARC : (d.y / aboveThresholdSum) * aboveThresholdFraction;
+      const newPercent =
+        curPercent <= MIN_ARC ? MIN_ARC : (d.y / aboveThresholdSum) * aboveThresholdFraction;
 
       return {
         x: d.x,

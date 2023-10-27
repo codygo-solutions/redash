@@ -20,7 +20,7 @@ import wordCloudVisualization from "./word-cloud";
 import addressableTableVisualization from "./addressable-table";
 import addressableCounterVisualization from "./addressable-counter";
 import addressableBarChartVisualization from "./addressable-bar-chart";
-import addressablePieVisualization from "./addressable-pie";
+import addressablePieChartVisualization from "./addressable-pie-chart";
 
 type VisualizationConfig = {
   type: string;
@@ -99,7 +99,7 @@ each(
     addressableTableVisualization,
     addressableCounterVisualization,
     addressableBarChartVisualization,
-    addressablePieVisualization,
+    addressablePieChartVisualization,
   ]),
   registerVisualization
 );
