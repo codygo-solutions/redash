@@ -5,12 +5,12 @@ on:
     inputs:
       version:
         description: 'version to build for'
-        required: true
+        required: false
         type: string
 
 env:
   ECR_REPOSITORY: 890143176237.dkr.ecr.us-east-1.amazonaws.com/adrsbl-redash
-  IMAGE_TAG: ${{ inputs.version || github.ref_name }}
+  IMAGE_TAG: ''
 
 jobs:
   build-and-deploy:
@@ -26,6 +26,16 @@ jobs:
           aws-access-key-id: ${{ secrets.A9E_REDASH_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.A9E_REDASH_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
+      - name: Build Version
+        run: |
+          PROVIDED_INPUT_VERSION=${{ inputs.version }}
+          VERSION=$(awk -F. -v OFS=. '{$NF += 1 ; print}' < ./version)
+
+          COMPUTED_VERSION=$([ -z "$PROVIDED_INPUT_VERSION" ] && echo $VERSION || echo $PROVIDED_INPUT_VERSION)
+
+          echo $COMPUTED_VERSION > ./version
+          echo "IMAGE_TAG=$COMPUTED_VERSION" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -55,3 +65,17 @@ jobs:
             sudo sed -i "0,/\(image:\).*/s/\(image:\).*/\1 $ESCAPED_IMG/" docker-compose.yml
             sudo docker-compose up -d
           EOL
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Automated Change
+          commit_user_name: My GitHub Actions Bot
+          commit_user_email: my-github-actions-bot@codygo.com
+
+          # TODO: might want to push to current branch, but not sure it would work if current branch is master
+          branch: ${{ env.IMAGE_TAG  }}
+          tagging_message: ${{ env.IMAGE_TAG }}
+
+          skip_checkout: true
+          disable_globbing: true
+          create_branch: true
