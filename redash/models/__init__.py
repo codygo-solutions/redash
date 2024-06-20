@@ -1346,6 +1346,13 @@ class ApiKey(TimestampMixin, GFKBase, db.Model):
         ).first()
 
     @classmethod
+    def get_all_by_type(cls, tablename):
+        return cls.query.filter(
+            cls.object_type == tablename,
+            cls.active == True,
+        ).all()
+
+    @classmethod
     def create_for_object(cls, object, user):
         k = cls(org=user.org, object=object, created_by=user)
         db.session.add(k)

@@ -52,11 +52,14 @@ def public_widget(widget):
     return res
 
 
-def public_dashboard(dashboard):
+def public_dashboard(dashboard, skip_widgets=False):
     dashboard_dict = project(
         serialize_dashboard(dashboard, with_favorite_state=False),
         ("name", "layout", "dashboard_filters_enabled", "updated_at", "created_at", "options"),
     )
+
+    if skip_widgets:
+        return dashboard_dict
 
     widget_list = (
         models.Widget.query.filter(models.Widget.dashboard_id == dashboard.id)
